@@ -1,25 +1,23 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         String input;
         String[] products = {"Хлеб", "Яблоки", "Молоко"};
-
-        boolean[] isFilled = new boolean[(products.length)];
         int[] price = {100, 200, 300};
-        int counter = 1;
-
+        File textFile = new File("basket.txt");
         Basket basket = new Basket(products, price);
+        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Список достуных товаров: ");
-
         for (int i = 0; i < products.length; i++) {
-            System.out.println(counter++ + ". " + products[i] + " " + price[i] + " руб/шт");
+            System.out.println(i + 1 + ". " + products[i] + " " + price[i] + " руб/шт");
         }
 
         while (true) {
-            Scanner scanner = new Scanner(System.in);
             System.out.println("Введите номер и количество товара или введите 'end' ");
             input = scanner.nextLine();
             if (input.equals("end")) {
@@ -29,11 +27,16 @@ public class Main {
             basket.addToCart(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
         }
 
-        System.out.println("Ваша корзина: ");
-        int sumProducts = basket.printCart();
-
-        System.out.println("К оплате " + sumProducts + " руб");
-
-
+        System.out.println("""
+                Хотите сохранить и выйти или закончить покупки? Введите цифру
+                1.Сохранить и выйти
+                2.Закончить покупки""");
+        input = scanner.nextLine();
+        if (input.equals("1")) {
+            basket.saveTxt(textFile);
+        } else if (input.equals("2")) {
+            basket.printCart();
+            textFile.deleteOnExit();
+        }
     }
 }

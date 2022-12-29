@@ -1,49 +1,84 @@
-import java.io.File;
+import java.io.*;
 
 public class Basket {
 
     String[] products;
     int[] price;
     boolean[] isFilled;
-    int[] arr;
+    int[] numberOfPieces;
+    File file = new File("basket.txt");
+    int positionInReceipt = 0;
 
-    public Basket(String[] products, int[] price) {
+
+    public Basket(String[] products, int[] price) throws IOException {
         this.products = products;
         this.price = price;
         isFilled = new boolean[products.length];
-        arr = new int[products.length];
+        numberOfPieces = new int[products.length];
+        if (file.exists()) {
+            loadFromTxtFile(file);
+        }
     }
 
     //метод добавления amount штук продукта номер productNum в корзину;
-    public void addToCart(int productNum, int amount){
-        arr[(productNum - 1)] = arr[(productNum - 1)] + amount;
+    public void addToCart(int productNum, int amount) {
+        numberOfPieces[(productNum - 1)] = numberOfPieces[(productNum - 1)] + amount;
         isFilled[(productNum - 1)] = true;
     }
 
     //метод вывода на экран покупательской корзины.
-    public int printCart(){
+    public void printCart() {
+        System.out.println("Ваша корзина: ");
         int sumProducts = 0;
-        int positionInReceipt = 0;
-
+        positionInReceipt = 0;
         for (boolean f : isFilled) {
             if (f) {
-                System.out.println(products[positionInReceipt] + " " + arr[positionInReceipt] + " шт " + price[positionInReceipt] +
-                        " руб/шт " + (price[positionInReceipt] * arr[positionInReceipt]) + " руб. в сумме");
-                sumProducts = sumProducts + (price[positionInReceipt] * arr[positionInReceipt]);
+                System.out.println(products[positionInReceipt] + " " +
+                        numberOfPieces[positionInReceipt] + " шт " + price[positionInReceipt] +
+                        " руб/шт " + (price[positionInReceipt] * numberOfPieces[positionInReceipt]) + " руб. в сумме");
+                sumProducts = sumProducts + (price[positionInReceipt] * numberOfPieces[positionInReceipt]);
             }
-            positionInReceipt = positionInReceipt + 1;
+            positionInReceipt++;
         }
-        return sumProducts;
+        System.out.println("К оплате " + sumProducts + " руб");
     }
 
     //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void pusaveTxt(File textFile){
-
+    public void saveTxt(File textFile) throws IOException {
+        positionInReceipt = 0;
+        try (PrintWriter out = new PrintWriter(textFile)) {
+            for (boolean f : isFilled) {
+                if (f) {
+                    out.print(positionInReceipt + " " +
+                            numberOfPieces[positionInReceipt] + " ");
+                }
+                positionInReceipt += 1;
+            }
+        }
     }
 
     //статический(!) метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
-    public static Basket loadFromTxtFile(File textFile){
-
-        return null;
+    public void loadFromTxtFile(File textFile) throws IOException {
+        try (FileInputStream f = new FileInputStream(textFile)) {
+            byte[] bytes = new byte[(char) textFile.length()];
+            f.read(bytes);
+            StringBuilder inputFromFile = new StringBuilder();
+            for (byte aByte : bytes) {
+                char s = (char) aByte;
+                inputFromFile.append(s);
+            }
+            String[] parts = inputFromFile.toString().split(" ");
+            for (int i = 0; i < parts.length; i++) {
+                positionInReceipt = Integer.parseInt(parts[i]);
+                i += 1;
+                isFilled[positionInReceipt] = true;
+                numberOfPieces[positionInReceipt] = Integer.parseInt(parts[i]);
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        positionInReceipt = 0;
     }
 }
+
+
