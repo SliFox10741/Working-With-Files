@@ -8,7 +8,7 @@ public class Main {
         String input;
         String[] products = {"Хлеб", "Яблоки", "Молоко"};
         int[] price = {100, 200, 300};
-        File textFile = new File("basket.txt");
+        File fileBin = new File("basket.bin");
         Basket basket = new Basket(products, price);
         Scanner scanner = new Scanner(System.in);
 
@@ -33,10 +33,10 @@ public class Main {
                 2.Закончить покупки""");
         input = scanner.nextLine();
         if (input.equals("1")) {
-            basket.saveTxt(textFile);
+            basket.saveBin(fileBin);
         } else if (input.equals("2")) {
             basket.printCart();
-            textFile.deleteOnExit();
+            fileBin.deleteOnExit();
         }
     }
 }

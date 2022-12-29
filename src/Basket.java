@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class Basket {
 
@@ -6,8 +7,8 @@ public class Basket {
     int[] price;
     boolean[] isFilled;
     int[] numberOfPieces;
-    File file = new File("basket.txt");
     int positionInReceipt = 0;
+    File fileBin = new File("basket.bin");
 
 
     public Basket(String[] products, int[] price) throws IOException {
@@ -15,8 +16,8 @@ public class Basket {
         this.price = price;
         isFilled = new boolean[products.length];
         numberOfPieces = new int[products.length];
-        if (file.exists()) {
-            loadFromTxtFile(file);
+        if (fileBin.exists()) {
+            loadFromBinFile(fileBin);
         }
     }
 
@@ -44,35 +45,38 @@ public class Basket {
     }
 
     //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void saveTxt(File textFile) throws IOException {
+    public void saveBin(File textFile) throws IOException {
         positionInReceipt = 0;
-        try (PrintWriter out = new PrintWriter(textFile)) {
+        try (FileOutputStream fos = new FileOutputStream(fileBin);
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
             for (boolean f : isFilled) {
                 if (f) {
-                    out.print(positionInReceipt + " " +
+                    out.writeBytes(positionInReceipt + " " +
                             numberOfPieces[positionInReceipt] + " ");
                 }
                 positionInReceipt += 1;
             }
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
-    //статический(!) метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
-    public void loadFromTxtFile(File textFile) throws IOException {
-        try (FileInputStream f = new FileInputStream(textFile)) {
-            byte[] bytes = new byte[(char) textFile.length()];
-            f.read(bytes);
+    //метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
+    public void loadFromBinFile(File textFile) throws IOException {
+        try (FileInputStream fis = new FileInputStream(fileBin);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
             StringBuilder inputFromFile = new StringBuilder();
-            for (byte aByte : bytes) {
-                char s = (char) aByte;
-                inputFromFile.append(s);
-            }
-            String[] parts = inputFromFile.toString().split(" ");
-            for (int i = 0; i < parts.length; i++) {
-                positionInReceipt = Integer.parseInt(parts[i]);
-                i += 1;
+            byte[] bytes = ois.readAllBytes();
+            String str = new String(bytes, StandardCharsets.UTF_8);
+            String[] set = str.split(" ");
+            for (int i = 0; i < set.length; i++) {
+
+                positionInReceipt = Integer.parseInt(set[i]);
                 isFilled[positionInReceipt] = true;
-                numberOfPieces[positionInReceipt] = Integer.parseInt(parts[i]);
+                i++;
+                numberOfPieces[positionInReceipt] = Integer.parseInt(set[i]);
+//                inputFromFile.append(s);
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -80,5 +84,3 @@ public class Basket {
         positionInReceipt = 0;
     }
 }
-
-
