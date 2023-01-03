@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class ClientLog {
 
-    File fileCSV;
+    protected File fileCSV;
     protected void log(int productNum, int amount) {
         fileCSV = new File("log.txt");
         int correctNumber = productNum;
