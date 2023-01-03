@@ -1,3 +1,5 @@
+package org.example;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
@@ -8,9 +10,10 @@ public class Main {
         String input;
         String[] products = {"Хлеб", "Яблоки", "Молоко"};
         int[] price = {100, 200, 300};
-        File textFile = new File("basket.txt");
         Basket basket = new Basket(products, price);
         Scanner scanner = new Scanner(System.in);
+        ClientLog clientLog = new ClientLog();
+        File fileCSV = new File("log.csv");
 
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
@@ -21,10 +24,34 @@ public class Main {
             System.out.println("Введите номер и количество товара или введите 'end' ");
             input = scanner.nextLine();
             if (input.equals("end")) {
+                clientLog.log(input);
                 break;
             }
             String[] parts = input.split(" ");
-            basket.addToCart(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+
+            int productNum;
+            try {
+                productNum = Integer.parseInt(parts[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Number format!!!");
+                continue;
+            }
+
+            int productAmount;
+            try {
+                productAmount = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Number format!!!");
+                continue;
+            }
+
+            if (productNum > products.length || productNum < 0) {
+                System.out.println("This product is not exist!!!");
+                continue;
+            }
+
+            basket.addToCart(productNum, productAmount);
+            clientLog.log(productNum, productAmount);
         }
 
         System.out.println("""
@@ -33,10 +60,14 @@ public class Main {
                 2.Закончить покупки""");
         input = scanner.nextLine();
         if (input.equals("1")) {
-            basket.saveTxt(textFile);
+            basket.saveTxt();
+            clientLog.log("Сохранить корзину");
         } else if (input.equals("2")) {
             basket.printCart();
-            textFile.deleteOnExit();
+            basket.clearBasket();
+            clientLog.log("Закончить покупки");
         }
+        clientLog.exportAsCSV(fileCSV);
+
     }
 }

@@ -7,6 +7,14 @@ out/
 .idea/
 *.iml
 *.xml
+target/
+
+
+### CSV XML JSON ###
+*.json
+*.csv
+*.txt
+
 
 ### Eclipse ###
 .apt_generated
