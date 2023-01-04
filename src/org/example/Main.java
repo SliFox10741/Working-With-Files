@@ -16,10 +16,11 @@ public class Main {
         File fileCSV = new File("log.csv");
         File file = new File("basket.txt");
         Basket basket = new Basket(products, prices);
+        File fileJSON = new File("basket.json");
 
-        if (file.exists()) {
-            //  Basket.loadFromTxtFile(file);
-            Basket.fromJsonFile("basket.json");
+        if (file.exists() && fileJSON.length() != 0) {
+//            basket = Basket.loadFromTxtFile(file);
+            basket = Basket.fromJsonFile(fileJSON);
         }
 
         System.out.println("Список достуных товаров: ");
@@ -66,11 +67,11 @@ public class Main {
                 1.Сохранить и выйти
                 2.Закончить покупки""");
         input = scanner.nextLine();
-        if (input.equals("1")) {
+        if (input.equals("1") && basket != null) {
             basket.saveText(file);
             basket.toJsonFile("basket.json");
             clientLog.log("Сохранить корзину");
-        } else if (input.equals("2")) {
+        } else if (input.equals("2") && basket != null) {
             basket.printCart();
             clientLog.log("Закончить покупки");
         }

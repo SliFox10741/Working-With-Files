@@ -32,7 +32,7 @@ public class Basket {
             int sumProducts = prices[i] * count;
             if (count != 0) {
                 total += sumProducts;
-                System.out.println(products[i] + " " + count + "шт: " + sumProducts + " руб.");
+                System.out.println(products[i] + " " + count + " шт: " + sumProducts + " руб.");
             }
         }
         System.out.println("К оплате: " + total + " руб.");
@@ -41,7 +41,7 @@ public class Basket {
     protected void saveText(File textFile) {
         try (PrintWriter out = new PrintWriter(textFile);) {
             for (int i = 0; i < products.length; i++) {
-                out.println(products[i] + " " + prices[i] + " " + productsCount[i]);
+                out.println(products[i] +" " + prices[i] + " " + productsCount[i]);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found!!!");
@@ -51,14 +51,34 @@ public class Basket {
     }
 
     public static Basket loadFromTxtFile(File textFile) throws IOException {
-        Path path = textFile.toPath();
-        List<String> basketList = Files.readAllLines(path);
+
+        /*try (FileInputStream f = new FileInputStream(textFile)) {
+            int[] numberOfPieces;
+            byte[] bytes = new byte[(char) textFile.length()];
+            f.read(bytes);
+            StringBuilder inputFromFile = new StringBuilder();
+            for (byte aByte : bytes) {
+                char s = (char) aByte;
+                inputFromFile.append(s);
+            }
+            String[] parts = inputFromFile.toString().split(" ");
+            for (int i = 0; i < parts.length; i++) {
+                int index = Integer.parseInt(parts[i]);
+                i += 1;
+                numberOfPieces[index] = Integer.parseInt(parts[i]);
+            }
+            Basket.setProductCount(numberOfPieces[] );
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+*/
+        List<String> basketList = Files.readAllLines(textFile.toPath());
 
         String[] productName = new String[basketList.size()];
         int[] prices = new int[basketList.size()];
         int[] productsCount = new int[basketList.size()];
 
-        for (int i = 0; i <= basketList.size() - 1; i++) {
+        for (int i = 0; i < basketList.size(); i++) {
             String[] data = basketList.get(i).split(" ");
             productName[i] = data[0];
             prices[i] = Integer.parseInt(data[1]);
@@ -68,7 +88,7 @@ public class Basket {
         Basket basket = new Basket(productName, prices);
         basket.setProductCount(productsCount);
         System.out.println("Корзина восстановлена");
-        basket.printCart();
+//        basket.printCart();
         return basket;
 
     }
@@ -97,16 +117,18 @@ public class Basket {
     }
 
 
-    public static void fromJsonFile(String pathJson) {
+    public static Basket fromJsonFile(File fileJson) {
         Gson gson = new Gson();
         try (
-                Reader reader = new FileReader(pathJson);
+                Reader reader = new FileReader(fileJson);
         ) {
             Basket basket = gson.fromJson(reader, Basket.class);
             System.out.println(basket);
+            return basket;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return null;
     }
 }
 
