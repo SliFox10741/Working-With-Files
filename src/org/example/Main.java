@@ -14,6 +14,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         ClientLog clientLog = new ClientLog();
         File fileCSV = new File("log.csv");
+        File file = new File("basket.txt");
 
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
@@ -60,7 +61,8 @@ public class Main {
                 2.Закончить покупки""");
         input = scanner.nextLine();
         if (input.equals("1")) {
-            basket.saveTxt();
+            basket.saveText();
+            basket.toJsonFile(file);
             clientLog.log("Сохранить корзину");
         } else if (input.equals("2")) {
             basket.printCart();

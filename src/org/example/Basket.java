@@ -1,9 +1,7 @@
 package org.example;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.*;
 
@@ -13,7 +11,7 @@ public class Basket {
     protected int[] price;
     protected boolean[] isFilled;
     protected int[] numberOfPieces;
-    protected File fileJSON = new File("basket.json");
+    protected File file = new File("basket.json");
     protected int positionInReceipt = 0;
 
 
@@ -22,8 +20,9 @@ public class Basket {
         this.price = price;
         isFilled = new boolean[products.length];
         numberOfPieces = new int[products.length];
-        if (fileJSON.exists() && fileJSON.length() != 0) {
+        if (file.exists() && file.length() != 0) {
             loadFromTxtFile();
+            fromJsonFile();
         }
     }
 
@@ -51,49 +50,69 @@ public class Basket {
     }
 
     //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void saveTxt() throws IOException {
-        JSONObject obj = new JSONObject();
-        obj.put("name", "Maxim");
-        JSONArray list = new JSONArray();
-        for (boolean f : isFilled) {
-            if (f) {
-                list.add(positionInReceipt + " " +
-                        numberOfPieces[positionInReceipt] + " ");
-            }
-            positionInReceipt += 1;
-        }
-        obj.put("basket", list);
 
-        try (FileWriter file = new FileWriter(fileJSON)) {
-            file.write(obj.toJSONString());
-            file.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    protected void saveText() {
+        try (PrintWriter out = new PrintWriter(file);) {
+            for (boolean f : isFilled) {
+                if (f) {
+                    out.println(positionInReceipt + " " +
+                            numberOfPieces[positionInReceipt] + " ");
+                }
+                positionInReceipt += 1;
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found!!!");
         }
         positionInReceipt = 0;
     }
 
     //метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
     public void loadFromTxtFile() throws IOException {
-        JSONParser parser = new JSONParser();
-        try {
-            Object obj = parser.parse(new FileReader(fileJSON));
-            JSONObject jsonObject = (JSONObject) obj;
-            JSONArray products = (JSONArray) jsonObject.get("basket");
-            for (Object product : products) {
-                String[] index = product.toString().split(" ");
-                positionInReceipt = Integer.parseInt(index[0]);
-                isFilled[positionInReceipt] = true;
-                numberOfPieces[positionInReceipt] = Integer.parseInt(index[1]);
+        try (FileInputStream f = new FileInputStream(file)) {
+            byte[] bytes = new byte[(char) file.length()];
+            f.read(bytes);
+            StringBuilder inputFromFile = new StringBuilder();
+            for (byte aByte : bytes) {
+                char s = (char) aByte;
+                inputFromFile.append(s);
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            String[] parts = inputFromFile.toString().split(" ");
+            for (int i = 0; i < parts.length; i++) {
+                positionInReceipt = Integer.parseInt(parts[i]);
+                i += 1;
+                isFilled[positionInReceipt] = true;
+                numberOfPieces[positionInReceipt] = Integer.parseInt(parts[i]);
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
         positionInReceipt = 0;
     }
 
+    public void toJsonFile(File file) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter writer = new FileWriter(this.file.getPath())) {
+            gson.toJson(file, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void fromJsonFile() {
+        Gson gson = new Gson();
+        try (
+                Reader reader = new FileReader(file.getPath());
+        ) {
+            Basket basket = gson.fromJson(reader, Basket.class);
+            System.out.println(basket);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void clearBasket() throws FileNotFoundException {
-        PrintWriter writer = new PrintWriter(fileJSON);
+        PrintWriter writer = new PrintWriter(file);
         writer.print("");
         writer.close();
     }
