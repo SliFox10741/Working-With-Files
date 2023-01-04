@@ -8,17 +8,23 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         String input;
-        String[] products = {"Хлеб", "Яблоки", "Молоко"};
-        int[] price = {100, 200, 300};
-        Basket basket = new Basket(products, price);
         Scanner scanner = new Scanner(System.in);
+        String[] products = {"Хлеб", "Яблоки", "Молоко"};
+        int[] prices = {100, 200, 300};
         ClientLog clientLog = new ClientLog();
+
         File fileCSV = new File("log.csv");
         File file = new File("basket.txt");
+        Basket basket = new Basket(products, prices);
+
+        if (file.exists()) {
+            //  Basket.loadFromTxtFile(file);
+            Basket.fromJsonFile("basket.json");
+        }
 
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
-            System.out.println(i + 1 + ". " + products[i] + " " + price[i] + " руб/шт");
+            System.out.println(i + 1 + ". " + products[i] + " " + prices[i] + " руб/шт");
         }
 
         while (true) {
@@ -61,15 +67,13 @@ public class Main {
                 2.Закончить покупки""");
         input = scanner.nextLine();
         if (input.equals("1")) {
-            basket.saveText();
-            basket.toJsonFile(file);
+            basket.saveText(file);
+            basket.toJsonFile("basket.json");
             clientLog.log("Сохранить корзину");
         } else if (input.equals("2")) {
             basket.printCart();
-            basket.clearBasket();
             clientLog.log("Закончить покупки");
         }
         clientLog.exportAsCSV(fileCSV);
-
     }
 }

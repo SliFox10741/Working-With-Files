@@ -4,117 +4,109 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 public class Basket {
+    private String[] products;
+    private int[] prices;
+    private int[] productsCount;
 
-    protected String[] products;
-    protected int[] price;
-    protected boolean[] isFilled;
-    protected int[] numberOfPieces;
-    protected File file = new File("basket.json");
-    protected int positionInReceipt = 0;
-
-
-    public Basket(String[] products, int[] price) throws IOException {
+    public Basket(String[] products, int[] prices) {
         this.products = products;
-        this.price = price;
-        isFilled = new boolean[products.length];
-        numberOfPieces = new int[products.length];
-        if (file.exists() && file.length() != 0) {
-            loadFromTxtFile();
-            fromJsonFile();
-        }
+        this.prices = prices;
+        productsCount = new int[products.length];
     }
 
-    //метод добавления amount штук продукта номер productNum в корзину;
-    public void addToCart(int productNum, int amount) {
-        numberOfPieces[(productNum - 1)] = numberOfPieces[(productNum - 1)] + amount;
-        isFilled[(productNum - 1)] = true;
+    protected void addToCart(int productNum, int amount) {
+        productsCount[(productNum - 1)] += amount;
     }
 
-    //метод вывода на экран покупательской корзины.
-    public void printCart() {
-        System.out.println("Ваша корзина: ");
-        int sumProducts = 0;
-        positionInReceipt = 0;
-        for (boolean f : isFilled) {
-            if (f) {
-                System.out.println(products[positionInReceipt] + " " +
-                        numberOfPieces[positionInReceipt] + " шт " + price[positionInReceipt] +
-                        " руб/шт " + (price[positionInReceipt] * numberOfPieces[positionInReceipt]) + " руб. в сумме");
-                sumProducts = sumProducts + (price[positionInReceipt] * numberOfPieces[positionInReceipt]);
+    protected void printCart() {
+        System.out.println("Ваша корзина:");
+        int total = 0;
+        for (int i = 0; i < productsCount.length; i++) {
+            int count = productsCount[i];
+            int sumProducts = prices[i] * count;
+            if (count != 0) {
+                total += sumProducts;
+                System.out.println(products[i] + " " + count + "шт: " + sumProducts + " руб.");
             }
-            positionInReceipt++;
         }
-        System.out.println("К оплате " + sumProducts + " руб");
+        System.out.println("К оплате: " + total + " руб.");
     }
 
-    //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-
-    protected void saveText() {
-        try (PrintWriter out = new PrintWriter(file);) {
-            for (boolean f : isFilled) {
-                if (f) {
-                    out.println(positionInReceipt + " " +
-                            numberOfPieces[positionInReceipt] + " ");
-                }
-                positionInReceipt += 1;
+    protected void saveText(File textFile) {
+        try (PrintWriter out = new PrintWriter(textFile);) {
+            for (int i = 0; i < products.length; i++) {
+                out.println(products[i] + " " + prices[i] + " " + productsCount[i]);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found!!!");
+
         }
-        positionInReceipt = 0;
+
     }
 
-    //метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
-    public void loadFromTxtFile() throws IOException {
-        try (FileInputStream f = new FileInputStream(file)) {
-            byte[] bytes = new byte[(char) file.length()];
-            f.read(bytes);
-            StringBuilder inputFromFile = new StringBuilder();
-            for (byte aByte : bytes) {
-                char s = (char) aByte;
-                inputFromFile.append(s);
-            }
-            String[] parts = inputFromFile.toString().split(" ");
-            for (int i = 0; i < parts.length; i++) {
-                positionInReceipt = Integer.parseInt(parts[i]);
-                i += 1;
-                isFilled[positionInReceipt] = true;
-                numberOfPieces[positionInReceipt] = Integer.parseInt(parts[i]);
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+    public static Basket loadFromTxtFile(File textFile) throws IOException {
+        Path path = textFile.toPath();
+        List<String> basketList = Files.readAllLines(path);
+
+        String[] productName = new String[basketList.size()];
+        int[] prices = new int[basketList.size()];
+        int[] productsCount = new int[basketList.size()];
+
+        for (int i = 0; i <= basketList.size() - 1; i++) {
+            String[] data = basketList.get(i).split(" ");
+            productName[i] = data[0];
+            prices[i] = Integer.parseInt(data[1]);
+            productsCount[i] = Integer.parseInt(data[2]);
         }
-        positionInReceipt = 0;
+
+        Basket basket = new Basket(productName, prices);
+        basket.setProductCount(productsCount);
+        System.out.println("Корзина восстановлена");
+        basket.printCart();
+        return basket;
+
     }
 
-    public void toJsonFile(File file) {
+    private void setProductCount(int[] productsCount) {
+        this.productsCount = productsCount;
+
+    }
+
+    public void toJsonFile(String pathJson) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter writer = new FileWriter(this.file.getPath())) {
-            gson.toJson(file, writer);
+        try (FileWriter writer = new FileWriter(pathJson)) {
+            gson.toJson(this, writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void fromJsonFile() {
+    @Override
+    public String toString() {
+        return "Корзина: {" +
+                "Название " + (Arrays.deepToString(products)) +
+                "\n Количество: " + (Arrays.toString(productsCount)) +
+                "}\n";
+    }
+
+
+    public static void fromJsonFile(String pathJson) {
         Gson gson = new Gson();
         try (
-                Reader reader = new FileReader(file.getPath());
+                Reader reader = new FileReader(pathJson);
         ) {
             Basket basket = gson.fromJson(reader, Basket.class);
             System.out.println(basket);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    public void clearBasket() throws FileNotFoundException {
-        PrintWriter writer = new PrintWriter(file);
-        writer.print("");
-        writer.close();
     }
 }
 
