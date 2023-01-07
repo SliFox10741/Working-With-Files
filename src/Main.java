@@ -6,15 +6,20 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         String input;
-        String[] products = {"Хлеб", "Яблоки", "Молоко"};
-        int[] price = {100, 200, 300};
-        File textFile = new File("basket.txt");
-        Basket basket = new Basket(products, price);
         Scanner scanner = new Scanner(System.in);
+        String[] products = {"Хлеб", "Яблоки", "Молоко"};
+        int[] prices = {100, 200, 300};
+
+        File file = new File("basket.txt");
+        Basket basket = new Basket(products, prices);
+
+        if (file.exists() && file.length() != 0) {
+            basket = Basket.loadFromTxtFile(file);
+        }
 
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
-            System.out.println(i + 1 + ". " + products[i] + " " + price[i] + " руб/шт");
+            System.out.println(i + 1 + ". " + products[i] + " " + prices[i] + " руб/шт");
         }
 
         while (true) {
@@ -33,10 +38,10 @@ public class Main {
                 2.Закончить покупки""");
         input = scanner.nextLine();
         if (input.equals("1")) {
-            basket.saveTxt(textFile);
+            basket.saveTxt(file);
         } else if (input.equals("2")) {
             basket.printCart();
-            textFile.deleteOnExit();
+            file.deleteOnExit();
         }
     }
 }
