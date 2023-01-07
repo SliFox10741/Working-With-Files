@@ -8,11 +8,12 @@ public class Main {
         String input;
         String[] products = {"Хлеб", "Яблоки", "Молоко"};
         int[] price = {100, 200, 300};
-        File fileBin = new File("basket.bin");
         Basket basket = new Basket(products, price);
+        File fileBin = new File("basket.bin");
         Scanner scanner = new Scanner(System.in);
+//        fileBin.deleteOnExit();
 
-        if (fileBin.exists()) {
+        if (fileBin.exists() && fileBin.length() != 0) {
             basket = Basket.loadFromBinFile(fileBin);
         }
 
