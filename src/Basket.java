@@ -76,7 +76,6 @@ public class Basket {
                 isFilled[positionInReceipt] = true;
                 i++;
                 numberOfPieces[positionInReceipt] = Integer.parseInt(set[i]);
-//                inputFromFile.append(s);
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
