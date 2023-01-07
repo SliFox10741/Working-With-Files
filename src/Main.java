@@ -12,6 +12,11 @@ public class Main {
         Basket basket = new Basket(products, price);
         Scanner scanner = new Scanner(System.in);
 
+        if (fileBin.exists()) {
+            basket = Basket.loadFromBinFile(fileBin);
+        }
+
+
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
             System.out.println(i + 1 + ". " + products[i] + " " + price[i] + " руб/шт");

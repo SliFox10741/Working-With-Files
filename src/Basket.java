@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 public class Basket {
 
@@ -8,7 +7,7 @@ public class Basket {
     boolean[] isFilled;
     int[] numberOfPieces;
     int positionInReceipt = 0;
-    File fileBin = new File("basket.bin");
+
 
 
     public Basket(String[] products, int[] price) throws IOException {
@@ -16,9 +15,7 @@ public class Basket {
         this.price = price;
         isFilled = new boolean[products.length];
         numberOfPieces = new int[products.length];
-        if (fileBin.exists()) {
-            loadFromBinFile(fileBin);
-        }
+
     }
 
     //метод добавления amount штук продукта номер productNum в корзину;
@@ -45,7 +42,7 @@ public class Basket {
     }
 
     //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void saveBin(File textFile) throws IOException {
+    public void saveBin(File fileBin) throws IOException {
         positionInReceipt = 0;
         try (FileOutputStream fos = new FileOutputStream(fileBin);
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
@@ -63,23 +60,14 @@ public class Basket {
     }
 
     //метод восстановления объекта корзины из текстового файла, в который ранее была она сохранена;
-    public void loadFromBinFile(File textFile) throws IOException {
-        try (FileInputStream fis = new FileInputStream(fileBin);
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
-            StringBuilder inputFromFile = new StringBuilder();
-            byte[] bytes = ois.readAllBytes();
-            String str = new String(bytes, StandardCharsets.UTF_8);
-            String[] set = str.split(" ");
-            for (int i = 0; i < set.length; i++) {
-
-                positionInReceipt = Integer.parseInt(set[i]);
-                isFilled[positionInReceipt] = true;
-                i++;
-                numberOfPieces[positionInReceipt] = Integer.parseInt(set[i]);
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+    public static Basket loadFromBinFile(File binFile) throws IOException {
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(binFile))) {
+            Basket basket = (Basket) objectInputStream.readObject();
+            System.out.print("Basket return");
+            basket.printCart();
+            return basket;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        positionInReceipt = 0;
     }
 }
