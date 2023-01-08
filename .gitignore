@@ -6,7 +6,6 @@ out/
 # IntellijIdea files
 .idea/
 *.iml
-*.xml
 target/
 
 

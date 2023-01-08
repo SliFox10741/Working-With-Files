@@ -1,27 +1,34 @@
 package org.example;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-
-        String input;
+    public static void main(String[] args) throws IOException, XPathExpressionException {
         Scanner scanner = new Scanner(System.in);
+        String input;
         String[] products = {"Хлеб", "Яблоки", "Молоко"};
         int[] prices = {100, 200, 300};
-        ClientLog clientLog = new ClientLog();
 
-        File fileCSV = new File("log.csv");
-        File file = new File("basket.txt");
         Basket basket = new Basket(products, prices);
-        File fileJSON = new File("basket.json");
+        ClientLog clientLog = new ClientLog();
+        XMLReader xmlReader = new XMLReader();
 
-        if (file.exists() && fileJSON.length() != 0) {
-//            basket = Basket.loadFromTxtFile(file);
-            basket = Basket.fromJsonFile(fileJSON);
+        File loadFile = xmlReader.loadXML();
+        File saveFile = xmlReader.saveXML();
+        File logFile = xmlReader.logXML();
+
+        if(loadFile != null && loadFile.length() != 0) {
+            String path = loadFile.getPath();
+            if (path.contains(".json")) {
+                basket = Basket.fromJsonFile(loadFile);
+            } else if (path.contains(".txt")) {
+                basket = Basket.loadFromTxtFile(loadFile);
+            }
         }
+
 
         System.out.println("Список достуных товаров: ");
         for (int i = 0; i < products.length; i++) {
@@ -32,7 +39,6 @@ public class Main {
             System.out.println("Введите номер и количество товара или введите 'end' ");
             input = scanner.nextLine();
             if (input.equals("end")) {
-                clientLog.log(input);
                 break;
             }
             String[] parts = input.split(" ");
@@ -67,14 +73,21 @@ public class Main {
                 1.Сохранить и выйти
                 2.Закончить покупки""");
         input = scanner.nextLine();
-        if (input.equals("1") && basket != null) {
-            basket.saveText(file);
-            basket.toJsonFile("basket.json");
-            clientLog.log("Сохранить корзину");
-        } else if (input.equals("2") && basket != null) {
-            basket.printCart();
-            clientLog.log("Закончить покупки");
+        if (saveFile != null) {
+            if (input.equals("1") && basket != null) {
+                if (saveFile.getPath().contains(".json")) {
+                    basket.toJsonFile(saveFile);
+                } else if (saveFile.getPath().contains(".txt")) {
+                    basket.saveText(saveFile);
+                }
+            } else if (input.equals("2") && basket != null) {
+                basket.printCart();
+                saveFile.deleteOnExit();
+            }
         }
-        clientLog.exportAsCSV(fileCSV);
+
+        if (logFile != null) {
+            clientLog.exportAsCSV(logFile);
+        }
     }
 }

@@ -1,7 +1,5 @@
 package org.example;
 
-import com.opencsv.CSVWriter;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -10,12 +8,11 @@ import java.util.Scanner;
 
 public class ClientLog {
 
-    protected File fileCSV;
+    protected File file;
     protected void log(int productNum, int amount) {
-        fileCSV = new File("log.txt");
-        int correctNumber = productNum;
-        try (FileWriter out = new FileWriter(fileCSV, true)) {
-            out.write(correctNumber + ", " + amount + "\n");
+        file = new File("log.txt");
+        try (FileWriter out = new FileWriter(file, true)) {
+            out.write(productNum-1 + ", " + amount + "\n");
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found!!!");
         } catch (IOException e) {
@@ -24,8 +21,8 @@ public class ClientLog {
     }
 
     protected void log(String action) {
-        fileCSV = new File("log.txt");
-        try (FileWriter out = new FileWriter(fileCSV, true)) {
+        file = new File("log.txt");
+        try (FileWriter out = new FileWriter(file, true)) {
             out.write(action + "\n");
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found!!!");
@@ -35,12 +32,9 @@ public class ClientLog {
     }
 
     public void exportAsCSV(File csvFile) throws IOException {
-        Scanner scan = new Scanner(fileCSV);
-        try (
-                FileWriter writer = new FileWriter(csvFile);
-        ) {
+        try (FileWriter writer = new FileWriter(csvFile)) {
             File txtFile = new File("log.txt");
-            txtFile.createNewFile();
+            Scanner scan = new Scanner(txtFile);
             writer.append("productNum, amount" + "\n");
             while (scan.hasNext()) {
                 String csv = scan.nextLine().replace("|", ",");
@@ -51,10 +45,5 @@ public class ClientLog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-
-    public void clearCSV () {
-
     }
 }

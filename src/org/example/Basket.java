@@ -5,13 +5,12 @@ import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 public class Basket {
-    private String[] products;
-    private int[] prices;
+    private final String[] products;
+    private final int[] prices;
     private int[] productsCount;
 
     public Basket(String[] products, int[] prices) {
@@ -47,31 +46,9 @@ public class Basket {
             throw new RuntimeException("File not found!!!");
 
         }
-
     }
 
     public static Basket loadFromTxtFile(File textFile) throws IOException {
-
-        /*try (FileInputStream f = new FileInputStream(textFile)) {
-            int[] numberOfPieces;
-            byte[] bytes = new byte[(char) textFile.length()];
-            f.read(bytes);
-            StringBuilder inputFromFile = new StringBuilder();
-            for (byte aByte : bytes) {
-                char s = (char) aByte;
-                inputFromFile.append(s);
-            }
-            String[] parts = inputFromFile.toString().split(" ");
-            for (int i = 0; i < parts.length; i++) {
-                int index = Integer.parseInt(parts[i]);
-                i += 1;
-                numberOfPieces[index] = Integer.parseInt(parts[i]);
-            }
-            Basket.setProductCount(numberOfPieces[] );
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-*/
         List<String> basketList = Files.readAllLines(textFile.toPath());
 
         String[] productName = new String[basketList.size()];
@@ -88,9 +65,7 @@ public class Basket {
         Basket basket = new Basket(productName, prices);
         basket.setProductCount(productsCount);
         System.out.println("Корзина восстановлена");
-//        basket.printCart();
         return basket;
-
     }
 
     private void setProductCount(int[] productsCount) {
@@ -98,9 +73,9 @@ public class Basket {
 
     }
 
-    public void toJsonFile(String pathJson) {
+    public void toJsonFile(File fileJson) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter writer = new FileWriter(pathJson)) {
+        try (FileWriter writer = new FileWriter(fileJson)) {
             gson.toJson(this, writer);
         } catch (IOException e) {
             e.printStackTrace();
@@ -119,16 +94,15 @@ public class Basket {
 
     public static Basket fromJsonFile(File fileJson) {
         Gson gson = new Gson();
-        try (
-                Reader reader = new FileReader(fileJson);
-        ) {
+
+        try (Reader reader = new FileReader(fileJson)) {
             Basket basket = gson.fromJson(reader, Basket.class);
             System.out.println(basket);
             return basket;
         } catch (Exception ex) {
             ex.printStackTrace();
+            return null;
         }
-        return null;
     }
 }
 
